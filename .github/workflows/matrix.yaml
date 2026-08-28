@@ -1,0 +1,33 @@
+name: Matrix pipeline
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch: 
+
+jobs:
+  node:
+    runs-on: ["wsl-linux"]
+    strategy:
+      matrix:
+        node-version: [24, 26]
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install packages
+        run: npm install
+
+      - name: Run application
+        run: |
+          node server.js &
+          sleep 5
+          curl http://localhost:8080
+          curl http://localhost:8080/health
+          pkill -f "node server.js"

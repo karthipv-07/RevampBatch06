@@ -1,0 +1,12 @@
+name: Basic GHA pipeline
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  basic:
+    runs-on: ["wsl-linux"]
+    steps:
+      - name: Print a statement
+        run: echo "Basic GHA pipeline successfull"

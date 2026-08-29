@@ -20,7 +20,7 @@ on:
 jobs:
   node:
     runs-on: ["wsl-linux"]
-    environment: prod
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev'}}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7

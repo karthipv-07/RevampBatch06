@@ -1,0 +1,17 @@
+FROM node:alpine3.24 AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+
+FROM node:alpine3.24
+WORKDIR /app
+RUN npm install express
+RUN npm install dotenv
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+COPY --from=build /app/node_modules ./
+COPY server.js ./
+COPY package.json ./
+EXPOSE 8080
+USER appuser
+ENTRYPOINT ["node"]
+CMD ["server.js", "development"]

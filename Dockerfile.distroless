@@ -1,0 +1,12 @@
+FROM node:alpine3.24 AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+
+FROM gcr.io/distroless/nodejs26-debian13
+WORKDIR /app
+COPY --from=build /app/node_modules ./node_modules
+COPY server.js ./
+COPY package.json ./
+EXPOSE 8080
+CMD ["server.js", "development"]

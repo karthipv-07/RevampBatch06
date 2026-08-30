@@ -1,0 +1,36 @@
+name: Docker Build and Push
+
+inputs:
+  username:
+    description: DockerHub username
+    required: true
+  password:
+    description: DockerHub password
+    required: true
+  dockerfileName:
+    description: Dockerfile Name
+    required: true
+  dockerhubReponame:
+    description: DockerHub Repo Name
+    required: true
+    
+runs:
+  using: composite
+  steps:
+    - name: Login to Dockerhub
+      uses: docker/login-action@v4
+      with:
+        username: ${{ inputs.username }}
+        password: ${{ inputs.password }}
+
+    - name: Build Docker image
+      run: docker build -f ${{ inputs.dockerfileName }} -t dockerimage .
+
+    - name: Tag Docker image
+      run: |
+        SHA="${GITHUB_SHA::7}"
+        echo "SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+        docker tag dockerimage ${{ inputs.username }}/${{ inputs.dockerhubReponame }}:$SHA
+
+    - name: Push to Dockerhub
+      run: docker push ${{ inputs.username }}/${{ inputs.dockerhubReponame }}:$SHA

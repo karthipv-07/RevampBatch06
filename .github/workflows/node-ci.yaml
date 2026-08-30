@@ -1,0 +1,50 @@
+name: Node App CI pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch: 
+
+jobs:
+  sonar:
+    runs-on: ["wsl-linux"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Sonarqube analysis
+        uses: SonarSource/sonarqube-scan-action@v8
+        with:
+          args: >
+            -Dsonar.projectKey=NodeApp
+            -Dsonar.sources=.
+            -Dsonar.host.url=${{ vars.SONAR_HOST_URL }}
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+
+  docker:
+    runs-on: ["wsl-linux"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Login to Dockerhub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build Docker image
+        run: docker build -f Dockerfile.distroless -t distroless .
+
+      - name: Tag Docker image
+        run: |
+          SHA="${GITHUB_SHA::7}"
+          echo "SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          docker tag distroless ${{ vars.DOCKERHUB_USERNAME }}/nodeapp6:$SHA
+
+      - name: Push to Dockerhub
+        run: docker push ${{ vars.DOCKERHUB_USERNAME }}/nodeapp6:$SHA

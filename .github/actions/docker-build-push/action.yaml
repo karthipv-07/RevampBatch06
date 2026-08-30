@@ -24,13 +24,16 @@ runs:
         password: ${{ inputs.password }}
 
     - name: Build Docker image
+      shell: shell
       run: docker build -f ${{ inputs.dockerfileName }} -t dockerimage .
 
     - name: Tag Docker image
+      shell: bash
       run: |
         SHA="${GITHUB_SHA::7}"
         echo "SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
         docker tag dockerimage ${{ inputs.username }}/${{ inputs.dockerhubReponame }}:$SHA
 
     - name: Push to Dockerhub
+      shell: bash
       run: docker push ${{ inputs.username }}/${{ inputs.dockerhubReponame }}:$SHA
